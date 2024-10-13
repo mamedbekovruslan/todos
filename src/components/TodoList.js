@@ -1,4 +1,14 @@
 import React, { useState, useEffect } from "react";
+import {
+  getDatabase,
+  ref,
+  push,
+  set,
+  onValue,
+  remove,
+  update,
+} from "firebase/database";
+import { database } from "../firebase";
 
 const TodoList = () => {
   const [todos, setTodos] = useState([]);
@@ -7,51 +17,34 @@ const TodoList = () => {
   const [sortByAlphabet, setSortByAlphabet] = useState(false);
 
   useEffect(() => {
-    fetchTodos();
+    const todoRef = ref(database, "todos/");
+    onValue(todoRef, (snapshot) => {
+      const data = snapshot.val();
+      const todosList = data
+        ? Object.keys(data).map((key) => ({ id: key, ...data[key] }))
+        : [];
+      setTodos(todosList);
+    });
   }, []);
 
-  const fetchTodos = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/todos");
-      const data = await response.json();
-      setTodos(data);
-    } catch (error) {
-      console.error("Не удалось получить список дел:", error);
-    }
-  };
-
-  const addTodo = async () => {
-    const newTodoItem = { title: newTodo, completed: false };
-    const response = await fetch("http://localhost:5000/todos", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newTodoItem),
-    });
-    const data = await response.json();
-    setTodos([...todos, data]);
+  const addTodo = () => {
+    const todoRef = ref(database, "todos/");
+    const newTodoRef = push(todoRef);
+    set(newTodoRef, { title: newTodo, completed: false });
     setNewTodo("");
   };
 
-  const updateTodo = async (id, updatedTodo) => {
-    const response = await fetch(`http://localhost:5000/todos/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedTodo),
-    });
-    const data = await response.json();
-    setTodos(todos.map((todo) => (todo.id === id ? data : todo)));
+  const updateTodo = (id, updatedTodo) => {
+    const todoRef = ref(database, `todos/${id}`);
+    update(todoRef, updatedTodo);
   };
 
-  const deleteTodo = async (id) => {
-    await fetch(`http://localhost:5000/todos/${id}`, { method: "DELETE" });
-    setTodos(todos.filter((todo) => todo.id !== id));
+  const deleteTodo = (id) => {
+    const todoRef = ref(database, `todos/${id}`);
+    remove(todoRef);
   };
 
-  const toggleTodo = async (id) => {
+  const toggleTodo = (id) => {
     const todo = todos.find((todo) => todo.id === id);
     const updatedTodo = { ...todo, completed: !todo.completed };
     updateTodo(id, updatedTodo);
