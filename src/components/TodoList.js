@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const TodoList = () => {
   const [todos, setTodos] = useState([]);
@@ -34,27 +35,23 @@ const TodoList = () => {
     setNewTodo("");
   };
 
-  const updateTodo = async (id, updatedTodo) => {
-    const response = await fetch(`http://localhost:5000/todos/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedTodo),
-    });
-    const data = await response.json();
-    setTodos(todos.map((todo) => (todo.id === id ? data : todo)));
-  };
-
-  const deleteTodo = async (id) => {
-    await fetch(`http://localhost:5000/todos/${id}`, { method: "DELETE" });
-    setTodos(todos.filter((todo) => todo.id !== id));
-  };
-
   const toggleTodo = async (id) => {
     const todo = todos.find((todo) => todo.id === id);
     const updatedTodo = { ...todo, completed: !todo.completed };
-    updateTodo(id, updatedTodo);
+
+    try {
+      const response = await fetch(`http://localhost:5000/todos/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedTodo),
+      });
+      const data = await response.json();
+      setTodos(todos.map((todo) => (todo.id === id ? data : todo)));
+    } catch (error) {
+      console.error("Не удалось обновить задачу:", error);
+    }
   };
 
   const handleSearch = (event) => {
@@ -73,27 +70,34 @@ const TodoList = () => {
 
   return (
     <div style={styles.container}>
-      <input
-        type="text"
-        value={newTodo}
-        onChange={(e) => setNewTodo(e.target.value)}
-        placeholder="Добавить новое дело"
-      />
-      <button onClick={addTodo} style={styles.button}>
-        Добавить
-      </button>
+      <h2 style={styles.title}>Список Дел</h2>
+      <div style={styles.inputContainer}>
+        <input
+          type="text"
+          value={newTodo}
+          onChange={(e) => setNewTodo(e.target.value)}
+          placeholder="Добавить новое дело"
+          style={styles.input}
+        />
+        <button onClick={addTodo} style={styles.button}>
+          Добавить
+        </button>
+      </div>
 
-      <input
-        type="text"
-        value={searchQuery}
-        onChange={handleSearch}
-        placeholder="Поиск по делам"
-        style={styles.searchInput}
-      />
-
-      <button onClick={handleSort} style={styles.button}>
-        {sortByAlphabet ? "Сортировка по умолчанию" : "Сортировать по алфавиту"}
-      </button>
+      <div style={styles.inputContainer}>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={handleSearch}
+          placeholder="Поиск по делам"
+          style={styles.searchInput}
+        />
+        <button onClick={handleSort} style={styles.button}>
+          {sortByAlphabet
+            ? "Сортировка по умолчанию"
+            : "Сортировать по алфавиту"}
+        </button>
+      </div>
 
       <ul style={styles.list}>
         {filteredTodos.map((todo) => (
@@ -102,11 +106,13 @@ const TodoList = () => {
               type="checkbox"
               checked={todo.completed}
               onChange={() => toggleTodo(todo.id)}
+              style={styles.checkbox}
             />
-            <span>{todo.title}</span>
-            <button onClick={() => deleteTodo(todo.id)} style={styles.button}>
-              Удалить
-            </button>
+            <Link to={`/task/${todo.id}`} style={styles.taskLink}>
+              {todo.title.length > 50
+                ? `${todo.title.slice(0, 50)}...`
+                : todo.title}
+            </Link>
           </li>
         ))}
       </ul>
@@ -120,13 +126,33 @@ const styles = {
     margin: "0 auto",
     padding: "20px",
     fontFamily: "Arial, sans-serif",
+    backgroundColor: "#f8f9fa",
+    borderRadius: "10px",
+    boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
   },
   title: {
     textAlign: "center",
     color: "#333",
+    marginBottom: "20px",
+  },
+  inputContainer: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "20px",
+  },
+  input: {
+    padding: "10px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    flex: "1",
+    marginRight: "10px",
   },
   searchInput: {
-    margin: "10px 0",
+    padding: "10px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    flex: "1",
+    marginRight: "10px",
   },
   list: {
     listStyle: "none",
@@ -137,16 +163,24 @@ const styles = {
     justifyContent: "space-between",
     padding: "10px",
     borderBottom: "1px solid #ddd",
+    alignItems: "center",
   },
   button: {
-    marginLeft: "10px",
-    marginRight: "10px",
     backgroundColor: "#87CEFA",
     color: "#fff",
     border: "none",
-    borderRadius: "10px",
-    padding: "5px 10px",
+    borderRadius: "5px",
+    padding: "10px 15px",
     cursor: "pointer",
+    transition: "background-color 0.3s",
+  },
+  checkbox: {
+    marginRight: "10px",
+  },
+  taskLink: {
+    textDecoration: "none",
+    color: "#000",
+    flex: "1",
   },
 };
 

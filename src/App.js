@@ -1,23 +1,24 @@
 import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import TaskDetails from "./components/TaskDetails";
 import TodoList from "./components/TodoList";
+import NotFound from "./components/NotFound"; // Страница ошибки 404
 
 const App = () => {
   return (
-    <div style={styles.mainDiv}>
-      <h1 style={styles.title}>Список дел</h1>
+    <Router>
+      <Routes>
+        {/* Маршрут для главной страницы со списком дел */}
+        <Route path="/" element={<TodoList />} />
 
-      <TodoList />
-    </div>
+        {/* Маршрут для страницы задачи с параметром ID */}
+        <Route path="/task/:id" element={<TaskDetails />} />
+
+        {/* Маршрут для страницы 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
   );
 };
 
 export default App;
-
-const styles = {
-  mainDiv: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-};
