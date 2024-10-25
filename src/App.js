@@ -1,13 +1,15 @@
 import React from "react";
 import TodoList from "./components/TodoList";
+import { TodoProvider } from "./store/TodoContext";
 
 const App = () => {
   return (
-    <div style={styles.mainDiv}>
-      <h1 style={styles.title}>Список дел</h1>
-
-      <TodoList />
-    </div>
+    <TodoProvider>
+      <div style={styles.mainDiv}>
+        <h1 style={styles.title}>Список дел</h1>
+        <TodoList />
+      </div>
+    </TodoProvider>
   );
 };
 

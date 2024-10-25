@@ -1,60 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useTodos } from "../store/TodoContext";
 
 const TodoList = () => {
-  const [todos, setTodos] = useState([]);
+  const {
+    todos,
+    addTodo,
+    deleteTodo,
+    toggleTodo,
+    searchQuery,
+    setSearchQuery,
+    sortByAlphabet,
+    setSortByAlphabet,
+  } = useTodos();
+
   const [newTodo, setNewTodo] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortByAlphabet, setSortByAlphabet] = useState(false);
 
-  useEffect(() => {
-    fetchTodos();
-  }, []);
-
-  const fetchTodos = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/todos");
-      const data = await response.json();
-      setTodos(data);
-    } catch (error) {
-      console.error("Не удалось получить список дел:", error);
+  const handleAddTodo = () => {
+    if (newTodo.trim()) {
+      addTodo(newTodo);
+      setNewTodo("");
     }
-  };
-
-  const addTodo = async () => {
-    const newTodoItem = { title: newTodo, completed: false };
-    const response = await fetch("http://localhost:5000/todos", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newTodoItem),
-    });
-    const data = await response.json();
-    setTodos([...todos, data]);
-    setNewTodo("");
-  };
-
-  const updateTodo = async (id, updatedTodo) => {
-    const response = await fetch(`http://localhost:5000/todos/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedTodo),
-    });
-    const data = await response.json();
-    setTodos(todos.map((todo) => (todo.id === id ? data : todo)));
-  };
-
-  const deleteTodo = async (id) => {
-    await fetch(`http://localhost:5000/todos/${id}`, { method: "DELETE" });
-    setTodos(todos.filter((todo) => todo.id !== id));
-  };
-
-  const toggleTodo = async (id) => {
-    const todo = todos.find((todo) => todo.id === id);
-    const updatedTodo = { ...todo, completed: !todo.completed };
-    updateTodo(id, updatedTodo);
   };
 
   const handleSearch = (event) => {
@@ -79,7 +44,7 @@ const TodoList = () => {
         onChange={(e) => setNewTodo(e.target.value)}
         placeholder="Добавить новое дело"
       />
-      <button onClick={addTodo} style={styles.button}>
+      <button onClick={handleAddTodo} style={styles.button}>
         Добавить
       </button>
 
@@ -120,10 +85,6 @@ const styles = {
     margin: "0 auto",
     padding: "20px",
     fontFamily: "Arial, sans-serif",
-  },
-  title: {
-    textAlign: "center",
-    color: "#333",
   },
   searchInput: {
     margin: "10px 0",
