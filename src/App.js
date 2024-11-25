@@ -1,23 +1,15 @@
-import React from "react";
-import TodoList from "./components/TodoList";
+import React, { Component } from 'react';
+import Board from './components/Board';
 
-const App = () => {
-  return (
-    <div style={styles.mainDiv}>
-      <h1 style={styles.title}>Список дел</h1>
-
-      <TodoList />
-    </div>
-  );
-};
+class App extends Component {
+  render() {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+          <h1 className="text-4xl font-bold mb-4">Крестики-Нолики</h1>
+          <Board />
+        </div>
+    );
+  }
+}
 
 export default App;
-
-const styles = {
-  mainDiv: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-};
